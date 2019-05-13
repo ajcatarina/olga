@@ -1,5 +1,7 @@
 import React from 'react'
 
+import AppLayout from 'components/AppLayout'
+
 function AppView(props) {
   return (
     <>

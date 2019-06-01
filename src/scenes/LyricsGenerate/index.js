@@ -57,7 +57,11 @@ function LyricsGenerate(props) {
     let canvas = document.createElement('canvas')
     blocks.map((block, index) => {
       let blockSplit = block.split('\n')
-      const svgString = `<svg width="1280" height="720">
+      const svgString = `<defs>
+  <style>
+@import url('https://fonts.googleapis.com/css?family=Quicksand:700&display=swap');
+</style>
+</defs><svg width="1280" height="720">
         <text text-anchor="middle" x="640" y="600" font-family="Quicksand" font-size="30pt" font-style="bold" fill="white" letter-spacing="2">
           ${blockSplit[0] || ''}
         </text>

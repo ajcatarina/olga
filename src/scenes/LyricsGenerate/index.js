@@ -12,6 +12,7 @@ function LyricsGenerate(props) {
   const [sections, setSections] = useState('')
   const [lyrics, setLyrics] = useState('')
   const [debouncedLyrics] = useDebounce(lyrics, 777)
+  const [debouncedSections] = useDebounce(sections, 777)
   const [images, setImages] = useState([])
   const [zipHref, setZipHref] = useState('')
 
@@ -47,21 +48,22 @@ function LyricsGenerate(props) {
   
   const _sections = sections.split('|')
 
-  let ready = debouncedLyrics === lyrics
+  let ready = debouncedLyrics === lyrics && debouncedSections === sections
 
   useEffect(() => {
 
     const zip = new JSZip()
     let imageFilename
     let images = []
-    let canvas = document.createElement('canvas')
+    let canvas = document.getElementById('canvas')
+    canvas.style.letterSpacing = '0.07em'
     blocks.map((block, index) => {
       let blockSplit = block.split('\n')
       const svgString = `<svg width="1280" height="720">
-        <text text-anchor="middle" x="640" y="600" font-family="Quicksand" font-size="30pt" font-style="bold" fill="white" letter-spacing="2">
+        <text text-anchor="middle" x="640" y="605" font-family="Quicksand" font-size="40.25px" font-style="bold" fill="white">
           ${blockSplit[0] || ''}
         </text>
-        <text text-anchor="middle" x="640" y="650" font-family="Quicksand" font-size="30pt" font-style="bold" fill="white" letter-spacing="2">
+        <text text-anchor="middle" x="640" y="665" font-family="Quicksand" font-size="40.25px" font-style="bold" fill="white">
           ${blockSplit[1] || ''}
         </text>
       </svg>`
@@ -80,17 +82,20 @@ function LyricsGenerate(props) {
     })
 
     setImages(images)
-  }, [debouncedLyrics])
+  }, [debouncedLyrics, debouncedSections])
 
   return (
     <>
       <div style={{ padding: 10 }}>
         <div>
+          <div style={{ display: 'none' }}>
+            <canvas id="canvas" width="800px" height="600px"/>
+          </div>
           <Typography variant="h3" style={{ fontFamily: 'Quicksand' }}>
             OLGA
           </Typography>
           <Typography style={{ fontFamily: 'Quicksand' }} gutterBottom>
-            Lyrics Generator
+            Lyrics Generator BETA
           </Typography>
         </div>
         <div style={{ paddingTop: 5 }}>
@@ -111,7 +116,6 @@ function LyricsGenerate(props) {
             variant="outlined"
             label="Song Title - Artist - Album"
             value={title}
-            placeholder="WHAT A BEAUTIFUL NAME"
             onChange={e => setTitle(e.target.value.toUpperCase())}
             InputLabelProps={{
               style: { fontFamily: 'Quicksand' }
@@ -135,7 +139,6 @@ function LyricsGenerate(props) {
                     margin="normal"
                     label="Section"
                     value={item}
-                    placeholder="VERSE 1-1"
                     onChange={e => {
                       const value = e.target.value.toUpperCase()
                       const _sections = sections.split('|')
@@ -222,7 +225,7 @@ function LyricsGenerate(props) {
         </div>
         <main style={{ flexGrow: 1, maxHeight: 'calc(100vh - 160px)', overflowY: 'scroll' }}>
           {images.map((image, index) => (
-            <>
+            <div key={index}>
               <Typography variant="caption" style={{ marginLeft: 10, fontFamily: 'Quicksand' }}>
                 {_sections[index]}
               </Typography>
@@ -231,16 +234,13 @@ function LyricsGenerate(props) {
                 style={{
                   height: 'auto',
                   minWidth: 100,
-                  // border: 'red',
-                  // borderWidth: 2,
-                  // borderStyle: 'solid',
                   marginLeft: 10,
                   background: 'black',
                 }}
               >
                 <img alt={image.section} src={image.src} style={{ width: '100%' }} />
               </div>  
-            </>
+            </div>
           ))}
         </main>
       </div>

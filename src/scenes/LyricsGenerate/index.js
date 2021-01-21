@@ -3,12 +3,19 @@ import Typography from '@material-ui/core/Typography'
 import ButtonBase from '@material-ui/core/ButtonBase'
 import TextField from '@material-ui/core/TextField'
 import CircularProgress from '@material-ui/core/CircularProgress'
+import ToggleButton from '@material-ui/lab/ToggleButton'
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import canvg from 'canvg'
 import JSZip from 'jszip'
 import { useDebounce } from 'use-debounce'
 
+//const FONT = 'Quicksand'
+const FONT = 'futura'
+const FONT_STYLE = 'normal'
+
 function LyricsGenerate(props) {
   const [title, setTitle] = useState('')
+  const [background, setBackground] = useState('dark')
   const [sections, setSections] = useState('')
   const [lyrics, setLyrics] = useState('')
   const [debouncedLyrics] = useDebounce(lyrics, 777)
@@ -56,19 +63,43 @@ function LyricsGenerate(props) {
     let imageFilename
     let images = []
     let canvas = document.getElementById('canvas')
-    canvas.style.letterSpacing = '0.07em'
-    blocks.map((block, index) => {
+    canvas.style.letterSpacing = '3px'
+    blocks.forEach((block, index) => {
       let blockSplit = block.split('\n')
-      const svgString = `<svg width="1280" height="720">
-        <text text-anchor="middle" x="640" y="605" font-family="Quicksand" font-size="40.25px" font-style="bold" fill="white">
+      const svgString = `<svg viewBox="0 0 1280 720" width="1280" height="720">
+        <text id="line-1" text-anchor="middle" x="640" y="605" font-family="${FONT}" font-size="40.25px" font-style="${FONT_STYLE}" fill="white">
           ${blockSplit[0] || ''}
         </text>
-        <text text-anchor="middle" x="640" y="665" font-family="Quicksand" font-size="40.25px" font-style="bold" fill="white">
+        <text id="line-2" text-anchor="middle" x="640" y="665" font-family="${FONT}" font-size="40.25px" font-style="${FONT_STYLE}" fill="white">
           ${blockSplit[1] || ''}
         </text>
       </svg>`
-      
-      canvg(canvas, svgString)
+
+      const container = document.getElementById('svg-space')
+      container.innerHTML = svgString
+      const svgEl = container.firstChild
+      svgEl.style.letterSpacing = '3px'
+
+      function addTextBackground(textEl) {
+        const SVGRect = textEl.getBBox()
+
+        let rect = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+        rect.setAttribute("x", SVGRect.x - 10)
+        rect.setAttribute("y", SVGRect.y)
+        rect.setAttribute("width", SVGRect.width + 20)
+        rect.setAttribute("height", SVGRect.height)
+        rect.setAttribute("fill", "#00000088")
+        svgEl.insertBefore(rect, textEl)
+      }
+
+      const line1 = svgEl.getElementById('line-1')
+      const line2 = svgEl.getElementById('line-2')
+      if (background === 'dark') {
+        addTextBackground(line1)
+        addTextBackground(line2)
+      }
+
+      canvg(canvas, container.innerHTML)
       
       images.push({ section: '1', src: canvas.toDataURL() })
       canvas.toBlob(async blob => {
@@ -82,7 +113,7 @@ function LyricsGenerate(props) {
     })
 
     setImages(images)
-  }, [debouncedLyrics, debouncedSections])
+  }, [debouncedLyrics, debouncedSections, background])
 
   return (
     <>
@@ -91,10 +122,10 @@ function LyricsGenerate(props) {
           <div style={{ display: 'none' }}>
             <canvas id="canvas" width="800px" height="600px"/>
           </div>
-          <Typography variant="h3" style={{ fontFamily: 'Quicksand' }}>
+          <Typography variant="h3" style={{ fontFamily: FONT }}>
             OLGA
           </Typography>
-          <Typography style={{ fontFamily: 'Quicksand' }} gutterBottom>
+          <Typography style={{ fontFamily: FONT }} gutterBottom>
             Lyrics Generator BETA
           </Typography>
         </div>
@@ -118,14 +149,18 @@ function LyricsGenerate(props) {
             value={title}
             onChange={e => setTitle(e.target.value.toUpperCase())}
             InputLabelProps={{
-              style: { fontFamily: 'Quicksand' }
+              style: { fontFamily: FONT }
             }}
             InputProps={{
-              style: { fontFamily: 'Quicksand' }
+              style: { fontFamily: FONT }
             }}
             style={{ width: 500 }}
           />
         </div>
+        <TextBackgroundToggle
+          background={background}
+          onChange={v => setBackground(v)}
+        />
       </div>
       <div style={{ display: 'flex', paddingLeft: 10, paddingRight: 10 }}>
         <div style={{ flex: '0 0 auto', width: 700, maxHeight: 'calc(100vh - 160px)', overflowY: 'scroll' }}>
@@ -146,10 +181,10 @@ function LyricsGenerate(props) {
                       setSections(_sections.join('|'))
                     }}
                     InputLabelProps={{
-                      style: { fontFamily: 'Quicksand' }
+                      style: { fontFamily: FONT }
                     }}
                     InputProps={{
-                      style: { fontFamily: 'Quicksand' }
+                      style: { fontFamily: FONT }
                     }}
                   />
                 </div>
@@ -212,10 +247,10 @@ function LyricsGenerate(props) {
                       // }
                     }}
                     InputLabelProps={{
-                      style: { fontFamily: 'Quicksand' }
+                      style: { fontFamily: FONT }
                     }}
                     InputProps={{
-                      style: { fontFamily: 'Quicksand' }
+                      style: { fontFamily: FONT }
                     }}
                   />
                 </div>
@@ -226,7 +261,7 @@ function LyricsGenerate(props) {
         <main style={{ flexGrow: 1, maxHeight: 'calc(100vh - 160px)', overflowY: 'scroll' }}>
           {images.map((image, index) => (
             <div key={index}>
-              <Typography variant="caption" style={{ marginLeft: 10, fontFamily: 'Quicksand' }}>
+              <Typography variant="caption" style={{ marginLeft: 10, fontFamily: FONT }}>
                 {_sections[index]}
               </Typography>
               <div 
@@ -235,7 +270,9 @@ function LyricsGenerate(props) {
                   height: 'auto',
                   minWidth: 100,
                   marginLeft: 10,
-                  background: 'black',
+                  //background: 'black',
+                  background: `url('./preview-bg.png')`,
+                  backgroundSize: 'cover',
                 }}
               >
                 <img alt={image.section} src={image.src} style={{ width: '100%' }} />
@@ -244,6 +281,41 @@ function LyricsGenerate(props) {
           ))}
         </main>
       </div>
+    </>
+  )
+}
+
+function TextBackgroundToggle(props) {
+  const {
+    background = 'dark',
+    onChange = () => null,
+  } = props
+
+  return (
+    <>
+      <div
+        style={{
+          marginTop: 10,
+          marginBottom: 10,
+          fontSize: 12,
+          color: '#00000085',
+        }}
+      >
+        Lyrics Background
+      </div>
+      <ToggleButtonGroup
+        value={background}
+        exclusive
+        onChange={(e, newVal) => onChange(newVal)}
+        size="small"
+      >
+        <ToggleButton value="dark">
+          DARK
+        </ToggleButton>
+        <ToggleButton value="none">
+          NONE
+        </ToggleButton>
+      </ToggleButtonGroup>
     </>
   )
 }

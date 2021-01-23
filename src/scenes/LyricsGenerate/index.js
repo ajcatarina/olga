@@ -67,10 +67,10 @@ function LyricsGenerate(props) {
     blocks.forEach((block, index) => {
       let blockSplit = block.split('\n')
       const svgString = `<svg viewBox="0 0 1280 720" width="1280" height="720">
-        <text id="line-1" text-anchor="middle" x="640" y="605" font-family="${FONT}" font-size="40.25px" font-style="${FONT_STYLE}" fill="white">
+        <text id="line-1" text-anchor="middle" x="640" y="615" font-family="${FONT}" font-size="35.25px" font-style="${FONT_STYLE}" fill="white">
           ${blockSplit[0] || ''}
         </text>
-        <text id="line-2" text-anchor="middle" x="640" y="665" font-family="${FONT}" font-size="40.25px" font-style="${FONT_STYLE}" fill="white">
+        <text id="line-2" text-anchor="middle" x="640" y="675" font-family="${FONT}" font-size="35.25px" font-style="${FONT_STYLE}" fill="white">
           ${blockSplit[1] || ''}
         </text>
       </svg>`

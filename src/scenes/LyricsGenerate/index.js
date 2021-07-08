@@ -16,6 +16,7 @@ const FONT_STYLE = 'normal'
 function LyricsGenerate(props) {
   const [title, setTitle] = useState('')
   const [background, setBackground] = useState('dark')
+  const [outputSize, setOutputSize] = useState('1920x1080')
   const [sections, setSections] = useState('')
   const [lyrics, setLyrics] = useState('')
   const [debouncedLyrics] = useDebounce(lyrics, 777)
@@ -63,14 +64,27 @@ function LyricsGenerate(props) {
     let imageFilename
     let images = []
     let canvas = document.getElementById('canvas')
-    canvas.style.letterSpacing = '3px'
+
+    // Output dimensions
+    const width = outputSize.split('x')[0]
+    const height = outputSize.split('x')[1]
+    const xpos = width / 2
+    const ypos1Factor = 615 / 720
+    const ypos2Factor = 675 / 720
+    const ypos1 = ypos1Factor * height
+    const ypos2 = ypos2Factor * height
+    const fontSizeFactor = 35.25 / 720
+    const fontSize = height * fontSizeFactor
+    const letterSpacingFactor = 3 / 35.25
+    canvas.style.letterSpacing = (fontSize * letterSpacingFactor) + 'px'
+
     blocks.forEach((block, index) => {
       let blockSplit = block.split('\n')
-      const svgString = `<svg viewBox="0 0 1280 720" width="1280" height="720">
-        <text id="line-1" text-anchor="middle" x="640" y="615" font-family="${FONT}" font-size="35.25px" font-style="${FONT_STYLE}" fill="white">
+      const svgString = `<svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+        <text id="line-1" text-anchor="middle" x="${xpos}" y="${ypos1}" font-family="${FONT}" font-size="${fontSize}px" font-style="${FONT_STYLE}" fill="white">
           ${blockSplit[0] || ''}
         </text>
-        <text id="line-2" text-anchor="middle" x="640" y="675" font-family="${FONT}" font-size="35.25px" font-style="${FONT_STYLE}" fill="white">
+        <text id="line-2" text-anchor="middle" x="${xpos}" y="${ypos2}" font-family="${FONT}" font-size="${fontSize}px" font-style="${FONT_STYLE}" fill="white">
           ${blockSplit[1] || ''}
         </text>
       </svg>`
@@ -78,7 +92,7 @@ function LyricsGenerate(props) {
       const container = document.getElementById('svg-space')
       container.innerHTML = svgString
       const svgEl = container.firstChild
-      svgEl.style.letterSpacing = '3px'
+      svgEl.style.letterSpacing = (fontSize * letterSpacingFactor) + 'px'
 
       function addTextBackground(textEl) {
         const SVGRect = textEl.getBBox()
@@ -113,7 +127,7 @@ function LyricsGenerate(props) {
     })
 
     setImages(images)
-  }, [debouncedLyrics, debouncedSections, background])
+  }, [debouncedLyrics, debouncedSections, background, outputSize])
 
   return (
     <>
@@ -160,6 +174,10 @@ function LyricsGenerate(props) {
         <TextBackgroundToggle
           background={background}
           onChange={v => setBackground(v)}
+        />
+        <OutputSizeToggle
+          outputSize={outputSize}
+          onChange={v => setOutputSize(v)}
         />
       </div>
       <div style={{ display: 'flex', paddingLeft: 10, paddingRight: 10 }}>
@@ -314,6 +332,41 @@ function TextBackgroundToggle(props) {
         </ToggleButton>
         <ToggleButton value="none">
           NONE
+        </ToggleButton>
+      </ToggleButtonGroup>
+    </>
+  )
+}
+
+function OutputSizeToggle(props) {
+  const {
+    outputSize = '1920x1080',
+    onChange = () => null,
+  } = props
+
+  return (
+    <>
+      <div
+        style={{
+          marginTop: 10,
+          marginBottom: 10,
+          fontSize: 12,
+          color: '#00000085',
+        }}
+      >
+        Output Size
+      </div>
+      <ToggleButtonGroup
+        value={outputSize}
+        exclusive
+        onChange={(e, newVal) => onChange(newVal)}
+        size="small"
+      >
+        <ToggleButton value="1920x1080">
+          1920x1080
+        </ToggleButton>
+        <ToggleButton value="1280x720">
+          1280x720
         </ToggleButton>
       </ToggleButtonGroup>
     </>
